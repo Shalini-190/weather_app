@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App - Real-time Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .search-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #74b9ff;
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: #74b9ff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 120px;
+        }
+
+        .search-btn:hover {
+            background: #0984e3;
+        }
+
+        .search-btn:disabled {
+            background: #ddd;
+            cursor: not-allowed;
+        }
+
+        .examples {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        .examples strong {
+            color: #333;
+        }
+
+        .loading {
+    text-align: center;
+    padding: 40px;
+    color: #0c2461; /* dark blue */
+    font-size: 1.2rem;
+}
+
+
+        .error {
+            background: #ff7675;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .weather-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .current-weather {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .current-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .location-name {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .last-updated {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .current-temp {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .temp-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .weather-icon {
+            font-size: 4rem;
+        }
+
+        .temperature {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .condition {
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .feels-like {
+            color: #888;
+            font-size: 1rem;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .detail-icon {
+            font-size: 1.5rem;
+        }
+
+        .detail-text {
+            flex: 1;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .forecast-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .forecast-header {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .forecast-day {
+            text-align: center;
+            padding: 20px 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .forecast-day:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .day-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .day-icon {
+            font-size: 2.5rem;
+            margin: 10px 0;
+        }
+
+        .day-condition {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .day-temps {
+            margin: 10px 0;
+        }
+
+        .temp-high {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .temp-low {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .day-details {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .weather-container {
+                grid-template-columns: 1fr;
+            }
+
+            .forecast-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .weather-details {
+                grid-template-columns: 1fr;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-input {
+                min-width: auto;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .forecast-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .temp-display {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .temperature {
+                font-size: 3rem;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+        .modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 900px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+    float: right;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.info-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 1.5rem;
+    background-color: #0984e3;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 10px 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #ffffff;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+    </style>
+</head>
+<body>
+     <div class="container">
+    <div class="header">
+        <h1>🌤️ Weather App</h1>
+        <p>Real-time weather data with 5-day forecast</p>
+        <div class="creator-info" style="margin-top: 10px;">
+            Created by <strong>SHALINI S K</strong> | <span style="font-size: 0.9rem; opacity: 0.8;">Frontend Engineer</span>
+        </div>
+    </div>
+</div>
+        <div class="search-container">
+            <div class="search-form">
+                <input type="text" id="locationInput" class="search-input" 
+                       placeholder="Enter city, zip code, or coordinates..." 
+                       autocomplete="off">
+                <button id="searchBtn" class="search-btn">Get Weather</button>
+                <button id="locationBtn" class="search-btn" style="background: #00b894;">📍 Use My Location</button>
+            </div>
+            
+            <div class="examples">
+                <strong>Examples:</strong> 
+                New York, 560016,India, 40.7128,-74.0060, London, Tokyo, Eiffel Tower
+                <br><strong>📍 Tip:</strong> Click "Use My Location" for instant weather at your current position!
+            </div>
+        </div>
+
+        <div id="loading" class="loading hidden">
+    <div><span class="spinner"></span> Fetching weather data...</div>
+</div>
+
+
+        <div id="error" class="error hidden"></div>
+
+        <div id="weatherContainer" class="weather-container hidden">
+            <div class="current-weather">
+                <div class="current-header">
+                    <div id="locationName" class="location-name"></div>
+                    <div id="lastUpdated" class="last-updated"></div>
+                </div>
+
+                <div class="current-temp">
+                    <div class="temp-display">
+                        <div id="weatherIcon" class="weather-icon"></div>
+                        <div id="temperature" class="temperature"></div>
+                    </div>
+                    <div id="condition" class="condition"></div>
+                    <div id="feelsLike" class="feels-like"></div>
+                </div>
+
+                <div class="weather-details">
+                    <div class="detail-item">
+                        <div class="detail-icon">💧</div>
+                        <div class="detail-text">
+                            <div class="detail-label">Humidity</div>
+                            <div id="humidity" class="detail-value"></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">💨</div>
+                        <div class="detail-text">
+                            <div class="detail-label">Wind Speed</div>
+                            <div id="windSpeed" class="detail-value"></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">📊</div>
+                        <div class="detail-text">
+                            <div class="detail-label">Pressure</div>
+                            <div id="pressure" class="detail-value"></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">🌧️</div>
+                        <div class="detail-text">
+                            <div class="detail-label">Precipitation</div>
+                            <div id="precipitation" class="detail-value"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="forecast-container">
+                <div class="forecast-header">5-Day Forecast</div>
+                <div id="forecastGrid" class="forecast-grid">
+                    <!-- Forecast items will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="info-button" id="infoBtn" title="About PM Accelerator">ℹ️</button>
+
+    <!-- Info Modal -->
+    <div class="modal" id="infoModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeModal">&times;</button>
+            <div class="modal-header">
+                <div class="logo">🚀</div>
+                <h2>Product Manager Accelerator</h2>
+            </div>
+            <div class="modal-body">
+                <p><strong>From entry-level to VP of Product, we support PM professionals through every stage of their careers.</strong></p>
+                
+                <h3>🎯 Overview</h3>
+                <p>The Product Manager Accelerator Program is designed to support PM professionals through every stage of their careers. From students looking for entry-level jobs to Directors looking to take on a leadership role, our program has helped over hundreds of students fulfill their career aspirations.</p>
+                
+                <p>Our Product Manager Accelerator community are ambitious and committed. Through our program they have learnt, honed and developed new PM and leadership skills, giving them a strong foundation for their future endeavors.</p>
+
+                <h3>🚀 Our Services</h3>
+                
+                <div style="margin: 20px 0;">
+                    <h4 style="color: #0984e3; margin: 15px 0 8px 0;">🚀 PMA Pro</h4>
+                    <p>End-to-end product manager job hunting program that helps you master FAANG-level Product Management skills, conduct unlimited mock interviews, and gain job referrals through our largest alumni network. 25% of our offers came from tier 1 companies and get paid as high as $800K/year.</p>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <h4 style="color: #0984e3; margin: 15px 0 8px 0;">🚀 AI PM Bootcamp</h4>
+                    <p>Gain hands-on AI Product Management skills by building a real-life AI product with a team of AI Engineers, data scientists, and designers. We will also help you launch your product with real user engagement using our 100,000+ PM community and social media channels.</p>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <h4 style="color: #0984e3; margin: 15px 0 8px 0;">🚀 PMA Power Skills</h4>
+                    <p>Designed for existing product managers to sharpen their product management skills, leadership skills, and executive presentation skills.</p>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <h4 style="color: #0984e3; margin: 15px 0 8px 0;">🚀 PMA Leader</h4>
+                    <p>We help you accelerate your product management career, get promoted to Director and product executive levels, and win in the board room.</p>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <h4 style="color: #0984e3; margin: 15px 0 8px 0;">🚀 1:1 Resume Review</h4>
+                    <p>We help you rewrite your killer product manager resume to stand out from the crowd, with an interview guarantee. Get started by using our FREE killer PM resume template used by over 14,000 product managers.</p>
+                </div>
+
+                <h3>📚 Free Resources</h3>
+                <p>We also published over 500+ free training and courses. Check out our YouTube channel and Instagram @drnancyli to start learning for free today.</p>
+
+                <h3>🏢 Company Details</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li><strong>Founded:</strong> 2020</li>
+                    <li><strong>Industry:</strong> E-Learning Providers</li>
+                    <li><strong>Size:</strong> 2-10 employees, 141+ LinkedIn members</li>
+                    <li><strong>Location:</strong> Boston, MA</li>
+                    <li><strong>Phone:</strong> +1 954-889-1063</li>
+                </ul>
+
+                <h3>🎯 Specialties</h3>
+                <p style="font-size: 0.9rem;">Product Management, Product Manager Training, Product Management Certification, Product Lead, Product Executive, Associate Product Manager, Product Management Coaching, Product Manager Resume, Product Management Interview, VP of Product, Director of Product, Chief Product Officer, and AI Product Management.</p>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <a href="https://www.pmaccelerator.io/" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="linkedin-link" style="background: #00b894;">
+                            🌐 Visit Website
+                        </a>
+                        <a href="https://www.linkedin.com/school/pmaccelerator/" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="linkedin-link">
+                            📍 LinkedIn Page
+                        </a>
+                        <a href="https://www.youtube.com/c/drnancyli" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="linkedin-link" style="background: #ff6b6b;">
+                            📺 YouTube Channel
+                        </a>
+                    </div>
+                </div>
+
+                <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: #888;">
+                    Ready to accelerate your PM career? Join our community of ambitious product managers!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const locationInput = document.getElementById('locationInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const locationBtn = document.getElementById('locationBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const weatherContainer = document.getElementById('weatherContainer');
+
+        // Get current location using GPS
+        function getCurrentLocation() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by this browser.');
+                return;
+            }
+
+            // Show loading state
+            const locationBtn = event.target;
+            const originalText = locationBtn.textContent;
+            locationBtn.textContent = '🔄 Getting location...';
+            locationBtn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const coords = `${position.coords.latitude},${position.coords.longitude}`;
+                    locationInput.value = coords;
+                    
+                    // Reset button
+                    locationBtn.textContent = originalText;
+                    locationBtn.disabled = false;
+                    
+                    // Automatically search for weather
+                    searchWeather();
+                },
+                error => {
+                    // Reset button
+                    locationBtn.textContent = originalText;
+                    locationBtn.disabled = false;
+                    
+                    let errorMessage = 'Location access denied. Please enter your location manually.';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'Location access denied. Please allow location access and try again.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'Location information unavailable. Please enter your location manually.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'Location request timed out. Please try again or enter manually.';
+                            break;
+                    }
+                    
+                    alert(errorMessage);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000 // 5 minutes
+                }
+            );
+        }
+
+        // Search functionality
+        async function searchWeather() {
+            const location = locationInput.value.trim();
+            
+            if (!location) {
+                showError('Please enter a location');
+                return;
+            }
+
+            showLoading();
+            hideError();
+            hideWeather();
+
+            try {
+                const response = await fetch('/api/weather', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ location: location })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    displayWeather(data);
+                }
+            } catch (err) {
+                showError('Network error. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Event listeners
+        searchBtn.addEventListener('click', searchWeather);
+        locationBtn.addEventListener('click', getCurrentLocation);
+        locationInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchWeather();
+            }
+        });
+
+        // UI helper functions
+        function showLoading() {
+            loading.classList.remove('hidden');
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Loading...';
+        }
+
+        function hideLoading() {
+            loading.classList.add('hidden');
+            searchBtn.disabled = false;
+            searchBtn.textContent = 'Get Weather';
+        }
+
+        function showError(message) {
+            error.textContent = message;
+            error.classList.remove('hidden');
+        }
+
+        function hideError() {
+            error.classList.add('hidden');
+        }
+
+        function hideWeather() {
+            weatherContainer.classList.add('hidden');
+        }
+
+        function displayWeather(data) {
+            const { current, forecast } = data;
+
+            // Update current weather
+            document.getElementById('locationName').textContent = current.location;
+            document.getElementById('lastUpdated').textContent = `Last updated: ${current.last_updated}`;
+            document.getElementById('weatherIcon').textContent = current.icon;
+            document.getElementById('temperature').textContent = `${current.temperature}°C`;
+            document.getElementById('condition').textContent = current.condition;
+            document.getElementById('feelsLike').textContent = `Feels like ${current.feels_like}°C`;
+            document.getElementById('humidity').textContent = `${current.humidity}%`;
+            document.getElementById('windSpeed').textContent = `${current.wind_speed} km/h`;
+            document.getElementById('pressure').textContent = `${current.pressure} hPa`;
+            document.getElementById('precipitation').textContent = `${current.precipitation} mm`;
+
+            // Update forecast
+            const forecastGrid = document.getElementById('forecastGrid');
+            forecastGrid.innerHTML = '';
+
+            forecast.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'forecast-day';
+                dayElement.innerHTML = `
+                    <div class="day-name">${day.day_name}</div>
+                    <div class="day-icon">${day.icon}</div>
+                    <div class="day-condition">${day.condition}</div>
+                    <div class="day-temps">
+                        <div class="temp-high">${day.temp_max}°C</div>
+                        <div class="temp-low">${day.temp_min}°C</div>
+                    </div>
+                    <div class="day-details">
+                        💧 ${day.precipitation}mm<br>
+                        💨 ${day.wind_max}km/h
+                    </div>
+                `;
+                forecastGrid.appendChild(dayElement);
+            });
+
+            weatherContainer.classList.remove('hidden');
+        }
+
+        // Auto-focus on input
+        locationInput.focus();
+        // Modal logic
+const infoBtn = document.getElementById("infoBtn");
+const infoModal = document.getElementById("infoModal");
+const closeModal = document.getElementById("closeModal");
+
+infoBtn.addEventListener("click", () => {
+    infoModal.style.display = "block";
+});
+
+closeModal.addEventListener("click", () => {
+    infoModal.style.display = "none";
+});
+
+window.addEventListener("click", (event) => {
+    if (event.target === infoModal) {
+        infoModal.style.display = "none";
+    }
+});
+
+    </script>
+</body>
+</html>
